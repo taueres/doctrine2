@@ -717,56 +717,18 @@ class BasicEntityPersister implements EntityPersister
             $hints[Query::HINT_REFRESH_ENTITY]  = $entity;
         }
 
+        $hydrationMode = $this->currentPersisterContext->selectJoinSql ? Query::HYDRATE_OBJECT : Query::HYDRATE_SIMPLEOBJECT;
         if (
             $assoc
             && ClassMetadata::FETCH_USE_PROXY === $assoc['fetch']
             && $assoc['isOwningSide']
             && $this->class->inheritanceType !== ClassMetadata::INHERITANCE_TYPE_NONE
+            && ! $this->currentPersisterContext->selectJoinSql
         ) {
-            // Proceed only if criteria contains every identifier
-            $criteriaKeys = array_keys($criteria);
-            $diffIdentifiers = array_diff($this->class->identifier, $criteriaKeys);
-
-            if (count($diffIdentifiers) === 0) {
-                // Remove useless fields
-                $diffExtras = array_diff($criteriaKeys, $this->class->identifier);
-                foreach ($diffExtras as $field => $value) {
-                    unset($criteria[$field]);
-                }
-
-                $entityName = $this->class->name;
-                $platform = $this->em->getConnection()->getDatabasePlatform();
-
-                $discrColumnName = $platform->getSQLResultCasing($this->class->discriminatorColumn['name']);
-
-                // Find mapped discriminator column from the result set.
-                if ($metaMappingDiscrColumnName = array_search($discrColumnName, $this->currentPersisterContext->rsm->metaMappings)) {
-                    $discrColumnName = $metaMappingDiscrColumnName;
-                }
-
-                $sqlResult = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-                if ( ! isset($sqlResult[$discrColumnName])) {
-                    throw HydrationException::missingDiscriminatorColumn($entityName, $discrColumnName, key($this->currentPersisterContext->rsm->aliasMap));
-                }
-
-                if ($sqlResult[$discrColumnName] === '') {
-                    throw HydrationException::emptyDiscriminatorValue(key($this->currentPersisterContext->rsm->aliasMap));
-                }
-
-                $discrMap = $this->class->discriminatorMap;
-
-                if ( ! isset($discrMap[$sqlResult[$discrColumnName]])) {
-                    throw HydrationException::invalidDiscriminatorValue($sqlResult[$discrColumnName], array_keys($discrMap));
-                }
-
-                $entityName = $discrMap[$sqlResult[$discrColumnName]];
-
-                return $this->em->getProxyFactory()->getProxy($entityName, $criteria);
-            }
+            $hydrationMode = Query::HYDRATE_PROXY;
         }
 
-        $hydrator = $this->em->newHydrator($this->currentPersisterContext->selectJoinSql ? Query::HYDRATE_OBJECT : Query::HYDRATE_SIMPLEOBJECT);
+        $hydrator = $this->em->newHydrator($hydrationMode);
         $entities = $hydrator->hydrateAll($stmt, $this->currentPersisterContext->rsm, $hints);
 
         return $entities ? $entities[0] : null;
