@@ -2,6 +2,6 @@
 
 use Doctrine\ORM\Tools\Console\ConsoleRunner;
 
-$entityManager = require 'boot.php';
+require 'boot.php';
 
-return ConsoleRunner::createHelperSet($entityManager);
+return ConsoleRunner::createHelperSet(getEM());

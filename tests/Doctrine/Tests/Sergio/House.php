@@ -2,6 +2,7 @@
 
 namespace Doctrine\Tests\Sergio;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\DiscriminatorColumn;
 use Doctrine\ORM\Mapping\DiscriminatorMap;
@@ -9,6 +10,7 @@ use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\InheritanceType;
+use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
 
 /**
@@ -42,6 +44,18 @@ class House
     private $street;
 
     /**
+     * @var Person[]
+     *
+     * @OneToMany(targetEntity="Doctrine\Tests\Sergio\Person", mappedBy="house")
+     */
+    private $persons;
+
+    public function __construct()
+    {
+        $this->persons = new ArrayCollection();
+    }
+
+    /**
      * @return int
      */
     public function getId()
@@ -63,5 +77,13 @@ class House
     public function setStreet($street)
     {
         $this->street = $street;
+    }
+
+    /**
+     * @return ArrayCollection|Person[]
+     */
+    public function getPersons()
+    {
+        return $this->persons;
     }
 }

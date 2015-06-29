@@ -1,9 +1,9 @@
 php:
   build: .
   volumes:
-   - ..:/root/doctrine
+    - ..:/root/doctrine
   links:
-   - db
+    - db
 
 db:
   image: mysql:5.6

@@ -1,20 +1,43 @@
 <?php
+
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Tests\Sergio\Flat;
+use Doctrine\Tests\Sergio\House;
 use Doctrine\Tests\Sergio\Person;
 
-/** @var EntityManagerInterface $entityManager */
-$entityManager = require 'boot.php';
+require 'boot.php';
 
-$h = new Flat();
-$h->setStreet('indirizzo');
-$h->setFloor(4);
+main();
 
-$p = new Person();
-$p->setFirstName('eugenio');
-$p->setLastName('lesta');
-$p->setHouse($h);
+function main() {
+    $eugenioLesta = new Person();
+    $eugenioLesta->setFirstName('eugenio');
+    $eugenioLesta->setLastName('lesta');
 
-$entityManager->persist($p);
-$entityManager->persist($h);
-$entityManager->flush();
+    $sergioSantoro = new Person();
+    $sergioSantoro->setFirstName('sergio');
+    $sergioSantoro->setLastName('santoro');
+
+    $valerioGesualdi = new Person();
+    $valerioGesualdi->setFirstName('valerio');
+    $valerioGesualdi->setLastName('gesualdi');
+
+    $house = new House();
+    $house->setStreet('termoli');
+
+    $flat = new Flat();
+    $flat->setStreet('milano');
+    $flat->setFloor(3);
+
+    $eugenioLesta->setHouse($house);
+    $sergioSantoro->setHouse($flat);
+    $valerioGesualdi->setHouse($house);
+
+    $em = getEm();
+    $em->persist($eugenioLesta);
+    $em->persist($sergioSantoro);
+    $em->persist($valerioGesualdi);
+    $em->persist($house);
+    $em->persist($flat);
+    $em->flush();
+}

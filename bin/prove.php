@@ -2,14 +2,16 @@
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Tests\Sergio\Person;
+use Doctrine\Tests\Sergio\House;
 
-/** @var EntityManagerInterface $entityManager */
-$entityManager = require 'boot.php';
+require 'boot.php';
 
-/** @var Person $p */
-$p = $entityManager->find(Person::class, 1);
-var_dump(get_class($p->getHouse()));
+main();
 
-var_dump($p->getHouse());
+function main()
+{
+    $em = getEm();
 
-var_dump($p->getHouse()->getFloor());
+    $houses = $em->getRepository(House::class)->findAll();
+    var_dump($houses[0]->getPersons()->count());
+}
